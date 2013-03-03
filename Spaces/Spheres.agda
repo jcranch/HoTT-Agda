@@ -4,6 +4,7 @@ module Spaces.Spheres where
 
 open import Base
 open import Spaces.Suspension public
+-- Intention is to define the Hopf map S³ → S²
 
 -- [Sⁿ n] is the sphere of dimension n
 Sⁿ : ℕ → Set

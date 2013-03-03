@@ -21,7 +21,7 @@ abstract
       ind-hyp | O = inhab-prop-is-contr (proj true) (τ-is-truncated _ _)
       ind-hyp | S n = Sⁿ-S-is-connected n
 
-Sⁿ⋆ : (n : ℕ) → pType₀
+Sⁿ⋆ : (n : ℕ) → Set⋆₀
 Sⁿ⋆ n = (Sⁿ n , ⋆Sⁿ n)
 
 abstract
