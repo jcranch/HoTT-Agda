@@ -17,7 +17,13 @@ Set⋆₀ : Set₁
 Set⋆₀ = Set⋆ zero
 
 _→⋆_ : ∀ {i j} → (Set⋆ i → Set⋆ j → Set⋆ (max i j))
-_→⋆_ A B = (Σ (∣ A ∣ → ∣ B ∣) (λ f → f (⋆ A) ≡ ⋆ B), ((λ _ → ⋆ B) , refl _))
+(A , a) →⋆ (B , b) = (Σ (A → B) (λ f → f a ≡ b) , (cst b , refl b))
+
+id⋆ : ∀ {i} (A : Set⋆ i) → ∣ A →⋆ A ∣
+id⋆ (A , a) = id A , refl a
+
+cst⋆ : ∀ {i j} (A : Set⋆ i) (B : Set⋆ j) → ∣ A →⋆ B ∣
+cst⋆ (A , a) (B , b) = (cst b , refl b)
 
 τ⋆ : ∀ {i} → (ℕ₋₂ → Set⋆ i → Set⋆ i)
 τ⋆ n (X , x) = (τ n X , proj x)
