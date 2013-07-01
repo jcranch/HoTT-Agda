@@ -22,7 +22,7 @@ abstract
       ind-hyp | S n = Sⁿ-S-is-connected n
 
 Sⁿ⋆ : (n : ℕ) → Set⋆₀
-Sⁿ⋆ n = (Sⁿ n , ⋆Sⁿ n)
+Sⁿ⋆ n = ⋆[ Sⁿ n , ⋆Sⁿ n ]
 
 abstract
   πk-Sⁿ-is-contr : (k n : ℕ) (lt : k < n)

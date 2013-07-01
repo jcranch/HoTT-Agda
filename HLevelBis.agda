@@ -26,16 +26,16 @@ abstract
 
     lemma : (x y : is-contr A) (p : π₁ x ≡ π₁ y) (t : A)
       → transport (λ v → (z : A) → z ≡ v) p (π₂ x) t ≡ π₂ y t
-    lemma (x , p) (.x , q) (refl .x) t = contr-has-all-paths
-                                         (≡-is-truncated _ (x , p)) _ _
+    lemma (x , p) (.x , q) refl t = contr-has-all-paths
+                                    (≡-is-truncated _ (x , p)) _ _
 
   -- Equivalent types have the same truncation level
   equiv-types-truncated : ∀ {i j} {A : Set i} {B : Set j} (n : ℕ₋₂) (f : A ≃ B)
     → (is-truncated n A → is-truncated n B)
   equiv-types-truncated ⟨-2⟩ (f , e) (x , p) =
-    (f x , (λ y → ! (inverse-right-inverse (f , e) y) ∘ map f (p _)))
+    (f x , (λ y → ! (inverse-right-inverse (f , e) y) ∘ ap f (p _)))
   equiv-types-truncated (S n) f c = λ x y →
-    equiv-types-truncated n (equiv-map (f ⁻¹) x y ⁻¹) (c (f ⁻¹ ☆ x) (f ⁻¹ ☆ y))
+    equiv-types-truncated n (equiv-ap (f ⁻¹) x y ⁻¹) (c (f ⁻¹ ☆ x) (f ⁻¹ ☆ y))
 
   Π-is-truncated : ∀ {i j} (n : ℕ₋₂) {A : Set i} {P : A → Set j}
     → (((x : A) → is-truncated n (P x)) → is-truncated n (Π A P))
@@ -44,14 +44,6 @@ abstract
   Π-is-truncated (S n) p = λ f g →
     equiv-types-truncated n funext-equiv
       (Π-is-truncated n (λ x → p x (f x) (g x)))
-
-  Π-is-prop : ∀ {i j} {A : Set i} {P : A → Set j}
-    → (((x : A) → is-prop (P x)) → is-prop (Π A P))
-  Π-is-prop = Π-is-truncated ⟨-1⟩
-
-  Π-is-set : ∀ {i j} {A : Set i} {P : A → Set j}
-    → (((x : A) → is-set (P x)) → is-set (Π A P))
-  Π-is-set = Π-is-truncated ⟨0⟩
 
   →-is-truncated : ∀ {i j} (n : ℕ₋₂) {A : Set i} {B : Set j}
     → (is-truncated n B → is-truncated n (A → B))
@@ -90,6 +82,24 @@ abstract
     → is-prop (is-equiv f)
   is-equiv-is-prop f = Π-is-truncated _ (λ x → is-contr-is-prop)
 
+-- Specilization
+module _ where
+  Π-is-prop : ∀ {i j} {A : Set i} {P : A → Set j}
+    → (((x : A) → is-prop (P x)) → is-prop (Π A P))
+  Π-is-prop = Π-is-truncated ⟨-1⟩
+
+  Π-is-set : ∀ {i j} {A : Set i} {P : A → Set j}
+    → (((x : A) → is-set (P x)) → is-set (Π A P))
+  Π-is-set = Π-is-truncated ⟨0⟩
+
+  →-is-set : ∀ {i j} {A : Set i} {B : Set j}
+    → (is-set B → is-set (A → B))
+  →-is-set = →-is-truncated ⟨0⟩
+
+  →-is-prop : ∀ {i j} {A : Set i} {B : Set j}
+    → (is-prop B → is-prop (A → B))
+  →-is-prop = →-is-truncated ⟨-1⟩
+
 -- Type of all n-truncated types
 
 Type≤ : (n : ℕ₋₂) (i : Level) → Set (suc i)
@@ -114,12 +124,23 @@ abstract
                                       (λ _ → prop-is-truncated-S n
                                              (is-equiv-is-prop _))
 
+  ≃-is-set : ∀ {i} {A B : Set i} → (is-set A → is-set B → is-set (A ≃ B))
+  ≃-is-set = ≃-is-truncated ⟨0⟩
+
+  universe-≡-is-truncated : ∀ {i} (n : ℕ₋₂) {A B : Set i}
+    → (is-truncated n A → is-truncated n B → is-truncated n (A ≡ B))
+  universe-≡-is-truncated n pA pB = equiv-types-truncated n eq-to-path-equiv
+    $ ≃-is-truncated n pA pB
+
+  universe-≡-is-set : ∀ {i} {A B : Set i}
+    → (is-set A → is-set B → is-set (A ≡ B))
+  universe-≡-is-set = universe-≡-is-truncated ⟨0⟩
+
   Type≤-is-truncated : (n : ℕ₋₂) (i : Level)
     → is-truncated (S n) (Type≤ n i)
   Type≤-is-truncated n i A B =
     equiv-types-truncated n total-Σ-eq-equiv
-    (Σ-is-truncated n (equiv-types-truncated n eq-to-path-equiv
-                                      (≃-is-truncated n (π₂ A) (π₂ B)))
+    (Σ-is-truncated n (universe-≡-is-truncated n (π₂ A) (π₂ B))
     (λ _ → contr-is-truncated n (≡-is-truncated _
            (inhab-prop-is-contr (π₂ B) (is-truncated-is-prop n {-(π₁ B)-})))))
 

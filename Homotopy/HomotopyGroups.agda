@@ -13,56 +13,51 @@ module Homotopy.HomotopyGroups {i} where
 
 -- Loop space
 Ω : (X : Set⋆ i) → Set⋆ i
-Ω X = ((⋆ X ≡ ⋆ X), refl (⋆ X))
+Ω X = ⋆[ ⋆ X ≡ ⋆ X , refl ]
 
-Ω-pregroup : (X : Set⋆ i) → Pregroup i
-Ω-pregroup X = pregroup
-  -- Carrier
-  (⋆ X ≡ ⋆ X)
-  -- Multiplication
-  _∘_
-  -- Unit
-  (refl _)
-  -- Inverse
-  !
-  -- Associativity
-  concat-assoc
-  -- Right unity
-  refl-right-unit
-  -- Left unity
-  refl
-  -- Right inverse
-  opposite-right-inverse
-  -- Left inverse
-  opposite-left-inverse
+Ω-pregroup : (X : Set⋆ i) → pregroup i
+Ω-pregroup X = record
+  { carrier       = (⋆ X) ≡ (⋆ X)
+  ; _∙_           = _∘_
+  ; e             = refl
+  ; _′            = !
+  ; assoc         = concat-assoc
+  ; right-unit    = refl-right-unit
+  ; left-unit     = λ _ → refl
+  ; right-inverse = opposite-right-inverse
+  ; left-inverse  = opposite-left-inverse
+  }
 
-Ωⁿ-pregroup : (n : ℕ) ⦃ >0 : n ≢ O ⦄ (X : Set⋆ i) → Pregroup i
-Ωⁿ-pregroup O ⦃ >0 ⦄ X = abort-nondep (>0 (refl O))
+Ωⁿ-pregroup : (n : ℕ) ⦃ ≢0 : n ≢ O ⦄ (X : Set⋆ i) → pregroup i
+Ωⁿ-pregroup O ⦃ ≢0 ⦄ X = abort-nondep (≢0 refl)
 Ωⁿ-pregroup 1 X = Ω-pregroup X
 Ωⁿ-pregroup (S (S n)) X = Ωⁿ-pregroup (S n) (Ω X)
 
 -- Homotopy groups
-πⁿ-group : (n : ℕ) ⦃ >0 : n ≢ O ⦄ (X : Set⋆ i) → Group i
+πⁿ-group : (n : ℕ) ⦃ >0 : n ≢ O ⦄ (X : Set⋆ i) → group i
 πⁿ-group n X = π₀-pregroup (Ωⁿ-pregroup n X)
 
+fundamental-group : (X : Set⋆ i) → group i
+fundamental-group X = πⁿ-group 1 ⦃ ℕ-S≢O 0 ⦄ X
+
 -- Homotopy groups of loop space
-πⁿ-group-from-πⁿΩ : (n : ℕ) ⦃ >0 : n ≢ 0 ⦄ (X : Set⋆ i)
+πⁿ-group-from-πⁿΩ : (n : ℕ) ⦃ ≢0 : n ≢ 0 ⦄ (X : Set⋆ i)
   → πⁿ-group (S n) X ≡ πⁿ-group n (Ω X)
-πⁿ-group-from-πⁿΩ O ⦃ >0 ⦄ X = abort-nondep (>0 (refl 0))
-πⁿ-group-from-πⁿΩ 1 X = refl _
-πⁿ-group-from-πⁿΩ (S (S n)) X = refl _
+πⁿ-group-from-πⁿΩ O ⦃ ≢0 ⦄ X = abort-nondep (≢0 refl)
+πⁿ-group-from-πⁿΩ 1 X = refl
+πⁿ-group-from-πⁿΩ (S (S n)) X = refl
 
 -- Homotopy groups of spaces of a given h-level
 abstract
-  truncated-πⁿ-group : (n : ℕ) ⦃ >0 : n ≢ 0 ⦄ (X : Set⋆ i)
+  truncated-πⁿ-group : (n : ℕ) ⦃ ≢0 : n ≢ 0 ⦄ (X : Set⋆ i)
     (p : is-truncated (n -1) ∣ X ∣)
     → πⁿ-group n X ≡ unit-group
-  truncated-πⁿ-group O ⦃ >0 ⦄ X p = abort-nondep (>0 (refl O))
+  truncated-πⁿ-group O ⦃ ≢0 ⦄ X p = abort-nondep (≢0 refl)
   truncated-πⁿ-group 1 X p =
     unit-group-unique _
-      (proj (refl _) ,
+      (proj refl ,
       π₀-extend ⦃ p = λ x → truncated-is-truncated-S _ (π₀-is-set _ _ _) ⦄
-        (λ x → map proj (π₁ (p _ _ _ _))))
+        (λ x → ap proj (π₁ (p _ _ _ _))))
   truncated-πⁿ-group (S (S n)) X p =
     truncated-πⁿ-group (S n) (Ω X) (λ x y → p _ _ x y)
 
@@ -77,19 +72,19 @@ abstract
 other-πⁿ : (n : ℕ) (X : Set⋆ i) → Set⋆ i
 other-πⁿ n X = Ωⁿ n (τ⋆ ⟨ n ⟩ X)
 
-map-Ω-equiv : (X Y : Set⋆ i) (e : X ≃⋆ Y)
+ap-Ω-equiv : (X Y : Set⋆ i) (e : X ≃⋆ Y)
   → Ω X ≃⋆ Ω Y
-map-Ω-equiv X Y e = transport (λ u → Ω X ≃⋆ Ω u) (Set⋆-eq e) (id-equiv⋆ _)
+ap-Ω-equiv X Y e = transport (λ u → Ω X ≃⋆ Ω u) (Set⋆-eq e) (id-equiv⋆ _)
 
 τ⋆Ω-is-Ωτ⋆S : (n : ℕ₋₂) (X : Set⋆ i)
   → τ⋆ n (Ω X) ≃⋆ Ω (τ⋆ (S n) X)
-τ⋆Ω-is-Ωτ⋆S n X = (τ-path-equiv-path-τ-S , refl _)
+τ⋆Ω-is-Ωτ⋆S n X = (τ-path-equiv-path-τ-S , refl)
 
 τ⋆kΩⁿ-is-Ωⁿτ⋆n+k : (k n : ℕ) (X : Set⋆ i)
   → τ⋆ ⟨ k ⟩ (Ωⁿ n X) ≃⋆ Ωⁿ n (τ⋆ ⟨ n + k ⟩ X)
 τ⋆kΩⁿ-is-Ωⁿτ⋆n+k k O X = id-equiv⋆ _
 τ⋆kΩⁿ-is-Ωⁿτ⋆n+k k (S n) X =
-  equiv-compose⋆ (τ⋆Ω-is-Ωτ⋆S _ _) (map-Ω-equiv _ _
+  equiv-compose⋆ (τ⋆Ω-is-Ωτ⋆S _ _) (ap-Ω-equiv _ _
     (equiv-compose⋆ (τ⋆kΩⁿ-is-Ωⁿτ⋆n+k (S k) n _)
       (transport (λ u → Ωⁿ n (τ⋆ ⟨ n + S k ⟩ X) ≃⋆ Ωⁿ n (τ⋆ ⟨ u ⟩ X))
         (+S-is-S+ n k) (id-equiv⋆ _))))
@@ -98,16 +93,6 @@ map-Ω-equiv X Y e = transport (λ u → Ω X ≃⋆ Ω u) (Set⋆-eq e) (id-equ
 πⁿ-is-other-πⁿ n X =
   transport (λ u → πⁿ n X ≃⋆ Ωⁿ n (τ⋆ ⟨ u ⟩ X)) (+0-is-id n)
     (τ⋆kΩⁿ-is-Ωⁿτ⋆n+k 0 n X)
-
-is-connected⋆ : ℕ₋₂ → Set⋆ i → Set i
-is-connected⋆ n (X , x) = is-connected n X
-
-connected-lt : (k n : ℕ) (lt : k < S n) (X : Set⋆ i)
-  → (is-connected⋆ ⟨ n ⟩ X → is-contr⋆ (τ⋆ ⟨ k ⟩ X))
-connected-lt .n n <n X p = p
-connected-lt k O (<S ()) X p
-connected-lt k (S n) (<S lt) X p =
-  connected-lt k n lt X (connected-S-is-connected ⟨ n ⟩ p)
 
 contr-is-contr-Ω : (X : Set⋆ i) → (is-contr⋆ X → is-contr⋆ (Ω X))
 contr-is-contr-Ω X p = ≡-is-truncated ⟨-2⟩ p
@@ -119,7 +104,7 @@ contr-is-contr-Ωⁿ (S n) X p = contr-is-contr-Ω _ (contr-is-contr-Ωⁿ n X p
 connected-other-πⁿ : (k n : ℕ) (lt : k < S n) (X : Set⋆ i)
   → (is-connected⋆ ⟨ n ⟩ X → is-contr⋆ (other-πⁿ k X))
 connected-other-πⁿ k n lt X p =
-  contr-is-contr-Ωⁿ k _ (connected-lt k n lt X p)
+  contr-is-contr-Ωⁿ k _ (connected⋆-lt k n lt X p)
 
 connected-πⁿ : (k n : ℕ) (lt : k < S n) (X : Set⋆ i)
   → (is-connected⋆ ⟨ n ⟩ X → is-contr⋆ (πⁿ k X))

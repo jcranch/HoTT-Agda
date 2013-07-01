@@ -8,51 +8,47 @@ open import Equivalences
 
 module Univalence {i} where
 
-abstract
-  id-is-equiv : (A : Set i) → is-equiv (id A)
-  id-is-equiv A = pathto-is-contr
-
-id-equiv : (A : Set i) → A ≃ A
-id-equiv A = (id A , id-is-equiv A)
-
-path-to-eq : {A B : Set i} → (A ≡ B → A ≃ B)
-path-to-eq (refl A) = id-equiv A
-
 postulate  -- Univalence axiom
-  univalence : (A B : Set i) → is-equiv (path-to-eq {A} {B})
-
-abstract
-  -- It does not harm to have [eq-to-path] abstract even if its type is not a
-  -- prop because the definition uses an axiom so there is no computational
-  -- content anyway
-  eq-to-path : {A B : Set i} → (A ≃ B → A ≡ B)
-  eq-to-path {A} {B} = inverse (path-to-eq , univalence A B)
-
-  eq-to-path-is-equiv : {A B : Set i} → is-equiv (eq-to-path {A} {B})
-  eq-to-path-is-equiv = inverse-is-equiv (path-to-eq , univalence _ _)
-
-  eq-to-path-right-inverse : {A B : Set i} (f : A ≃ B)
-    → path-to-eq (eq-to-path f) ≡ f
-  eq-to-path-right-inverse f =
-    inverse-right-inverse (path-to-eq , univalence _ _) f
+  univalence : (A B : Set i) → is-equiv (path-to-eq {i} {A} {B})
 
 path-to-eq-equiv : {A B : Set i} → ((A ≡ B) ≃ (A ≃ B))
 path-to-eq-equiv = (path-to-eq , univalence _ _)
 
 eq-to-path-equiv : {A B : Set i} → ((A ≃ B) ≃ (A ≡ B))
-eq-to-path-equiv = (eq-to-path , eq-to-path-is-equiv)
+eq-to-path-equiv = path-to-eq-equiv ⁻¹
+
+eq-to-path : {A B : Set i} → (A ≃ B → A ≡ B)
+eq-to-path {A} {B} = π₁ eq-to-path-equiv
+
+eq-to-path-right-inverse : {A B : Set i} (f : A ≃ B)
+  → path-to-eq (eq-to-path f) ≡ f
+eq-to-path-right-inverse = inverse-right-inverse path-to-eq-equiv
+
+path-to-eq-right-inverse : {A B : Set i} (f : A ≡ B)
+  → eq-to-path (path-to-eq f) ≡ f
+path-to-eq-right-inverse = inverse-left-inverse path-to-eq-equiv
 
 -- Transport in the structural fibration of a universe
 
 trans-id : {A B : Set i} (f : A ≡ B) (u : A)
   → transport (λ X → X) f u ≡ (path-to-eq f) ☆ u
-trans-id (refl _) u = refl u
+trans-id refl u = refl
+
+trans-id! : {A B : Set i} (f : A ≡ B) (u : B)
+  → transport (λ X → X) (! f) u ≡ inverse (path-to-eq f) u
+trans-id! refl u = refl
 
 trans-id-eq-to-path : {A B : Set i} (f : A ≃ B) (u : A)
   → transport (λ X → X) (eq-to-path f) u ≡ f ☆ u
 trans-id-eq-to-path {A} {B} f u =
   trans-id (eq-to-path f) u
-  ∘ map (λ (t : A ≃ B) → t ☆ u) (eq-to-path-right-inverse f)
+  ∘ ap (λ (t : A ≃ B) → t ☆ u) (eq-to-path-right-inverse f)
+
+trans-id-!eq-to-path : {A B : Set i} (f : A ≃ B) (u : B)
+  → transport (λ X → X) (! (eq-to-path f)) u ≡ inverse f u
+trans-id-!eq-to-path {A} {B} f u =
+  trans-id! (eq-to-path f) u
+  ∘ ap (λ (t : A ≃ B) → inverse t u) (eq-to-path-right-inverse f)
 
 -- Not used
 --
@@ -66,7 +62,7 @@ trans-id-eq-to-path {A} {B} f u =
 --   → transport (λ (X : Set i) → X → A) (eq-to-path e) f a ≡ f (inverse e a)
 -- trans-id→A-eq-to-path A e f a =
 --   trans-id→A A (eq-to-path e) f a
---   ∘ map (λ u → f (inverse u a)) (eq-to-path-right-inverse e)
+--   ∘ ap (λ u → f (inverse u a)) (eq-to-path-right-inverse e)
 
 -- trans-cst→X : ∀ {i j} (A : Set j) {X Y : Set i} (e : X ≡ Y) (f : A → X)
 --   (a : A) → transport (λ (X : Set i) → A → X) e f a
@@ -78,7 +74,7 @@ trans-id-eq-to-path {A} {B} f u =
 --   → transport (λ (X : Set i) → A → X) (eq-to-path e) f a ≡ π₁ e (f a)
 -- trans-cst→X-eq-to-path A e f a =
 --   trans-cst→X A (eq-to-path e) f a
---   ∘ map (λ u → π₁ u (f a)) (eq-to-path-right-inverse e)
+--   ∘ ap (λ u → π₁ u (f a)) (eq-to-path-right-inverse e)
 
 -- Induction along equivalences
 
@@ -93,4 +89,4 @@ equiv-induction P d f =
     (P : {A : Set i} {B : Set i} (f : A ≃ B) → Set j)
     (d : (A : Set i) → P (id-equiv A)) {A B : Set i} (p : A ≡ B)
     → P (path-to-eq p)
-  equiv-induction-int P d (refl A) = d A
+  equiv-induction-int P d refl = d _

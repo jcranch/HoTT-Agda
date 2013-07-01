@@ -1,194 +1,404 @@
 {-# OPTIONS --without-K #-}
 
 open import Base
+open import Homotopy.Pushout
+open import Homotopy.VanKampen.Guide
 
-{-
-  The truncated representation for paths in a pushout.
-  This is a combintion of two instances of OneSidedCode.
-  See OneSidedCode.agda.
+module Homotopy.VanKampen.Code {i} (d : pushout-diag i)
+  (l : legend i (pushout-diag.C d)) where
 
-       g
-    C---->B
-    |     |
-   f|  ~  |right
-    v     v
-    A---->P
-     left
+  open pushout-diag d
+  open legend l
 
-  This is for formalizing the van Kampen thereom.
--}
-
-module Homotopy.VanKampen.Code {i}
-  (C A B : Set i) (f : C → A) (g : C → B) where
-
-  open import Spaces.Pi0PathSpace
-  open import Homotopy.PushoutDef
+  open import Homotopy.Truncation
+  open import Homotopy.PathTruncation
 
   -- Code from A.
-  module C where
-    open import Homotopy.VanKampen.CodeHeadMerge C A B f g public hiding (P)
-    open import Homotopy.VanKampen.CodeTailFlip C A B f g public hiding (P)
+  import Homotopy.VanKampen.SplitCode d l as SC
+  import Homotopy.VanKampen.Code.LemmaPackA d l as C
   -- Code from B. Code flipped.
-  module CF where
-    open import Homotopy.VanKampen.CodeHeadMerge C B A g f public hiding (P)
-    open import Homotopy.VanKampen.CodeTailFlip C B A g f public hiding (P)
+  import Homotopy.VanKampen.SplitCode (pushout-diag-flip d) l as SCF
+  import Homotopy.VanKampen.Code.LemmaPackA (pushout-diag-flip d) l as CF
 
   P : Set i
-  P = pushout (diag A , B , C , f , g)
+  P = pushout d
 
-  a-code : A → P → Set i
-  a-code = C.code
+  module _ where
+    -- Things that can be directly re-exported
+    -- FIXME Ideally, this should be ‵SC'.
+    -- Somehow that doesn′t work.
+    open import Homotopy.VanKampen.SplitCode d l
+      public using () renaming
+        ( code            to a-code
+        ; code-a          to a-code-a
+        ; code-b          to a-code-b
+        ; code-rec        to a-code-rec
+        ; code-rec-nondep to a-code-rec-nondep
+        ; code-is-set     to a-code-is-set
+        ; code-a-is-set   to a-code-a-is-set
+        ; code-b-is-set   to a-code-b-is-set
+        )
+    module _ {a₁ : A} where
+      open import Homotopy.VanKampen.SplitCode d l a₁
+        public using () renaming
+          ( code-a-refl-refl  to a-code-a-refl-refl
+          ; code-b-refl-refl  to a-code-b-refl-refl
+          ; code-ab-swap      to a-code-ab-swap
+          ; trans-a           to trans-a-code-a
+          ; trans-ba          to trans-a-code-ba
+          ; trans-ab          to trans-a-code-ab
+          ; a⇒b               to aa⇒ab
+          ; b⇒a               to ab⇒aa
+          )
 
-  a-code-a : A → A → Set i
-  a-code-a = C.code-a
+    a-a : ∀ {a₁} {a₂} → a₁ ≡₀ a₂ → a-code-a a₁ a₂
+    a-a = SC.a _
 
-  a-code-b : A → B → Set i
-  a-code-b = C.code-b
+    infixl 6 a-a
+    syntax a-a co = ⟧a co
 
-  a-a : ∀ {a₁} {a₂} → a₁ ≡₀ a₂ → a-code-a a₁ a₂
-  a-a = C.a _
+    a-ba : ∀ {a₁} {a₂} n → a-code-b a₁ (g $ loc n) → f (loc n) ≡₀ a₂ → a-code-a a₁ a₂
+    a-ba = SC.ba _
 
-  infixl 6 a-a
-  syntax a-a co = ⟧a co
+    infixl 6 a-ba
+    syntax a-ba n co p = co ab⟦ n ⟧a p
 
-  a-ba : ∀ {a₁} {a₂} c → a-code-b a₁ (g c) → f c ≡₀ a₂ → a-code-a a₁ a₂
-  a-ba = C.ba _
+    a-ab : ∀ {a₁} {b₂} n → a-code-a a₁ (f $ loc n) → g (loc n) ≡₀ b₂ → a-code-b a₁ b₂
+    a-ab = SC.ab _
 
-  infixl 6 a-ba
-  syntax a-ba c co p = co ab⟦ c ⟧a p
+    infixl 6 a-ab
+    syntax a-ab n co p = co aa⟦ n ⟧b p
 
-  a-ab : ∀ {a₁} {b₂} c → a-code-a a₁ (f c) → g c ≡₀ b₂ → a-code-b a₁ b₂
-  a-ab = C.ab _
+  module _ where
+    -- Things that can be directly re-exported
+    open import Homotopy.VanKampen.SplitCode (pushout-diag-flip d) l
+      public using () renaming
+        ( code-a          to b-code-b
+        ; code-b          to b-code-a
+        ; code-rec        to b-code-rec
+        ; code-rec-nondep to b-code-rec-nondep
+        ; code-a-is-set   to b-code-b-is-set
+        ; code-b-is-set   to b-code-a-is-set
+        )
 
-  infixl 6 a-ab
-  syntax a-ab c co p = co aa⟦ c ⟧b p
+    b-code : B → P → Set i
+    b-code b = SCF.code b ◯ pushout-flip
 
-  b-code : B → P → Set i
-  b-code b = CF.code b ◯ pushout-flip
+    module _ {b₁ : B} where
+      open import Homotopy.VanKampen.SplitCode (pushout-diag-flip d) l b₁
+        public using () renaming
+          ( code-a-refl-refl  to b-code-b-refl-refl
+          ; code-b-refl-refl  to b-code-a-refl-refl
+          ; code-ab-swap      to b-code-ba-swap
+          ; trans-a           to trans-b-code-b
+          ; trans-ba          to trans-b-code-ab
+          ; trans-ab          to trans-b-code-ba
+          ; a⇒b               to bb⇒ba
+          ; b⇒a               to ba⇒bb
+          )
 
-  b-code-a : B → A → Set i
-  b-code-a = CF.code-b
+    b-b : ∀ {b₁} {b₂} → b₁ ≡₀ b₂ → b-code-b b₁ b₂
+    b-b = SCF.a _
 
-  b-code-b : B → B → Set i
-  b-code-b = CF.code-a
+    infixl 6 b-b
+    syntax b-b co = ⟧b co
 
-  b-b : ∀ {b₁} {b₂} → b₁ ≡₀ b₂ → b-code-b b₁ b₂
-  b-b = CF.a _
+    b-ab : ∀ {b₁} {b₂} n → b-code-a b₁ (f $ loc n) → g (loc n) ≡₀ b₂ → b-code-b b₁ b₂
+    b-ab = SCF.ba _
 
-  infixl 6 b-b
-  syntax b-b co = ⟧b co
+    infixl 6 b-ab
+    syntax b-ab c co p = co ba⟦ c ⟧b p
 
-  b-ab : ∀ {b₁} {b₂} c → b-code-a b₁ (f c) → g c ≡₀ b₂ → b-code-b b₁ b₂
-  b-ab = CF.ba _
+    b-ba : ∀ {b₁} {a₂} n → b-code-b b₁ (g $ loc n) → f (loc n) ≡₀ a₂ → b-code-a b₁ a₂
+    b-ba = SCF.ab _
 
-  infixl 6 b-ab
-  syntax b-ab c co p = co ba⟦ c ⟧b p
+    infixl 6 b-ba
+    syntax b-ba c co p = co bb⟦ c ⟧a p
 
-  b-ba : ∀ {b₁} {a₂} c → b-code-b b₁ (g c) → f c ≡₀ a₂ → b-code-a b₁ a₂
-  b-ba = CF.ab _
+    b-code-is-set : ∀ b₁ p₂ → is-set (b-code b₁ p₂)
+    b-code-is-set b₁ = SCF.code-is-set b₁ ◯ pushout-flip
 
-  infixl 6 b-ba
-  syntax b-ba c co p = co bb⟦ c ⟧a p
+  -- Tail flipping
+  open import Homotopy.VanKampen.Code.LemmaPackA d l public
+    using () renaming
+      ( aa⇒ba to aa⇒ba
+      ; ab⇒bb to ab⇒bb
+      ; ap⇒bp to ap⇒bp
+      )
+  open import Homotopy.VanKampen.Code.LemmaPackA (pushout-diag-flip d) l public
+    using () renaming
+      ( aa⇒ba to bb⇒ab
+      ; ab⇒bb to ba⇒aa
+      )
 
-  a-code-a-refl₀ : ∀ {a₁} {a₂} c (p₁ : a₁ ≡₀ _) (p₂ : _ ≡₀ a₂)
-    → ⟧a p₁ aa⟦ c ⟧b refl₀ _ ab⟦ c ⟧a p₂
-    ≡ ⟧a p₁             ∘₀            p₂
-  a-code-a-refl₀ = C.code-a-refl₀ _
+  -- Tail drifting
+  open import Homotopy.VanKampen.Code.LemmaPackB d l public
+    using () renaming
+      ( trans-q-code-a  to trans-q-a-code-a
+      ; trans-!q-code-a to trans-!q-a-code-a
+      ; trans-q-code-ba to trans-q-a-code-ba
+      ; trans-q-code-ab to trans-q-a-code-ab
+      )
+  open import Homotopy.VanKampen.Code.LemmaPackB (pushout-diag-flip d) l public
+    using () renaming
+      ( trans-q-code-a  to trans-q-b-code-b
+      ; trans-!q-code-a to trans-!q-b-code-b
+      ; trans-q-code-ba to trans-q-b-code-ab
+      ; trans-q-code-ab to trans-q-b-code-ba
+      )
 
-  a-code-ba-refl₀ : ∀ {a₁} {a₂} c₁ (co : a-code-b a₁ _) c₂ p₁ (p₂ : _ ≡₀ a₂)
-    → co ab⟦ c₁ ⟧a p₁ aa⟦ c₂ ⟧b refl₀ _ ab⟦ c₂ ⟧a p₂
-    ≡ co ab⟦ c₁ ⟧a p₁              ∘₀             p₂
-  a-code-ba-refl₀ = C.code-ba-refl₀ _
+  bp⇒ap : ∀ n {p} → b-code (g $ loc n) p → a-code (f $ loc n) p
+  bp⇒ap n {p} = transport
+    (λ x → b-code (g $ loc n) p → a-code (f $ loc n) x)
+    (pushout-flip-flip p)
+    (CF.ap⇒bp n {pushout-flip p})
 
-  a-code-ab-refl₀ : ∀ {a₁} {b₂} c₁ (co : a-code-a a₁ _) c₂ p₁ (p₂ : _ ≡₀ b₂)
-    → co aa⟦ c₁ ⟧b p₁ ab⟦ c₂ ⟧a refl₀ _ aa⟦ c₂ ⟧b p₂
-    ≡ co aa⟦ c₁ ⟧b p₁              ∘₀             p₂
-  a-code-ab-refl₀ = C.code-ab-refl₀ _
+  private
+    Laba : name → P → Set i
+    Laba = λ n p → ∀ (co : a-code (f $ loc n) p) → bp⇒ap n {p} (ap⇒bp n {p} co) ≡ co
+  private
+    aba-glue-code : ∀ c {p} → Laba c p
+  abstract
+    aba-glue-code n {p} = pushout-rec (Laba n)
+      (λ _ → C.aba-glue-code-a n)
+      (λ _ → C.aba-glue-code-b n)
+      (λ _ → funext λ _ → prop-has-all-paths (a-code-b-is-set (f $ loc n) _ _ _) _ _)
+      p
 
-  b-code-b-refl₀ : ∀ {b₁} {b₂} c (p₁ : b₁ ≡₀ _) (p₂ : _ ≡₀ b₂)
-    → ⟧b p₁ bb⟦ c ⟧a refl₀ _ ba⟦ c ⟧b p₂
-    ≡ ⟧b p₁             ∘₀            p₂
-  b-code-b-refl₀ = CF.code-a-refl₀ _
+  private
+    Lbab : name → P → Set i
+    Lbab = λ n p → ∀ (co : b-code (g $ loc n) p) → ap⇒bp n {p} (bp⇒ap n {p} co) ≡ co
+  private
+    bab-glue-code : ∀ n {p} → Lbab n p
+  abstract
+    bab-glue-code n {p} = pushout-rec (Lbab n)
+      (λ _ → CF.aba-glue-code-b n)
+      (λ _ → CF.aba-glue-code-a n)
+      (λ _ → funext λ _ → prop-has-all-paths (b-code-b-is-set (g $ loc n) _ _ _) _ _)
+      p
 
-  b-code-ab-refl₀ : ∀ {b₁} {b₂} c₁ (co : b-code-a b₁ _) c₂ p₁ (p₂ : _ ≡₀ b₂)
-    → co ba⟦ c₁ ⟧b p₁ bb⟦ c₂ ⟧a refl₀ _ ba⟦ c₂ ⟧b p₂
-    ≡ co ba⟦ c₁ ⟧b p₁              ∘₀             p₂
-  b-code-ab-refl₀ = CF.code-ba-refl₀ _
+  private
+    glue-code-loc : ∀ n p → a-code (f $ loc n) p ≃ b-code (g $ loc n) p
+    glue-code-loc n p = ap⇒bp n {p} , iso-is-eq
+      (ap⇒bp n {p}) (bp⇒ap n {p}) (bab-glue-code n {p}) (aba-glue-code n {p})
 
-  b-code-ba-refl₀ : ∀ {b₁} {a₂} c₁ (co : b-code-b b₁ _) c₂ p₁ (p₂ : _ ≡₀ a₂)
-    → co bb⟦ c₁ ⟧a p₁ ba⟦ c₂ ⟧b refl₀ _ bb⟦ c₂ ⟧a p₂
-    ≡ co bb⟦ c₁ ⟧a p₁              ∘₀             p₂
-  b-code-ba-refl₀ = CF.code-ab-refl₀ _
+  private
+    TapbpTa : ∀ n₁ n₂ (r : loc n₁ ≡ loc n₂) {a}
+      → a-code-a (f $ loc n₂) a → Set i
+    TapbpTa n₁ n₂ r {a} co =
+        transport (λ x → b-code-a x a) (ap g r)
+          (aa⇒ba n₁ {a} $ transport (λ x → a-code-a x a) (! $ ap f r) co)
+      ≡ aa⇒ba n₂ {a} co
 
-  -- tail flipping
-  aa⇒ba : ∀ {c} {a} → a-code-a (f c) a → b-code-a (g c) a
-  aa⇒ba = C.aa⇒ba _
+    TapbpTb : ∀ n₁ n₂ (r : loc n₁ ≡ loc n₂) {b}
+      → a-code-b (f $ loc n₂) b → Set i
+    TapbpTb n₁ n₂ r {b} co =
+        transport (λ x → b-code-b x b) (ap g r)
+          (ab⇒bb n₁ {b} $ transport (λ x → a-code-b x b) (! $ ap f r) co)
+      ≡ ab⇒bb n₂ {b} co
 
-  ab⇒bb : ∀ {c} {b} → a-code-b (f c) b → b-code-b (g c) b
-  ab⇒bb = C.ab⇒bb _
+    TapbpTp : ∀ n₁ n₂ (r : loc n₁ ≡ loc n₂) {p}
+      → a-code (f $ loc n₂) p → Set i
+    TapbpTp n₁ n₂ r {p} co =
+        transport (λ x → b-code x p) (ap g r)
+          (ap⇒bp n₁ {p} $ transport (λ x → a-code x p) (! $ ap f r) co)
+      ≡ ap⇒bp n₂ {p} co
 
-  ba⇒aa : ∀ {c} {a} → b-code-a (g c) a → a-code-a (f c) a
-  ba⇒aa = CF.ab⇒bb _
+  private
+    ap⇒bp-shift-split : ∀ n₁ n₂ r
+      → (∀ {a₂} co → TapbpTa n₁ n₂ r {a₂} co)
+      × (∀ {b₂} co → TapbpTb n₁ n₂ r {b₂} co)
+  abstract
+    ap⇒bp-shift-split n₁ n₂ r = a-code-rec (f $ loc n₂)
+      (TapbpTa n₁ n₂ r)
+      ⦃ λ _ → ≡-is-set $ b-code-a-is-set _ _ ⦄
+      (TapbpTb n₁ n₂ r)
+      ⦃ λ _ → ≡-is-set $ b-code-b-is-set _ _ ⦄
+      (λ {a} p →
+        transport (λ x → b-code-a x a) (ap g r)
+          (aa⇒ba n₁ {a} $ transport (λ x → a-code-a x a) (! $ ap f r) $ ⟧a p)
+            ≡⟨ ap (transport (λ x → b-code-a x a) (ap g r) ◯ aa⇒ba n₁ {a})
+                  $ trans-!q-a-code-a (ap f r) p ⟩
+        transport (λ x → b-code-a x a) (ap g r)
+          (⟧b refl₀ bb⟦ n₁ ⟧a proj (ap f r) ∘₀ p)
+            ≡⟨ trans-q-b-code-ba (ap g r) _ _ _ ⟩
+        transport (λ x → b-code-b x (g $ loc n₁)) (ap g r) (⟧b refl₀)
+          bb⟦ n₁ ⟧a proj (ap f r) ∘₀ p
+            ≡⟨ ap (λ x → x bb⟦ n₁ ⟧a proj (ap f r) ∘₀ p) $ trans-q-b-code-b (ap g r) _ ⟩
+        ⟧b proj (! (ap g r)) ∘₀ refl₀ bb⟦ n₁ ⟧a proj (ap f r) ∘₀ p
+            ≡⟨ ap (λ x → ⟧b x bb⟦ n₁ ⟧a proj (ap f r) ∘₀ p) $ refl₀-right-unit _ ⟩
+        ⟧b proj (! (ap g r)) bb⟦ n₁ ⟧a proj (ap f r) ∘₀ p
+            ≡⟨ ! $ SCF.code-a-shift (g $ loc n₂) n₁ (proj (! (ap g r))) n₂ (proj r) p ⟩
+        ⟧b proj (! (ap g r) ∘ ap g r) bb⟦ n₂ ⟧a p
+            ≡⟨ ap (λ x → ⟧b proj x bb⟦ n₂ ⟧a p) $ opposite-left-inverse $ ap g r ⟩∎
+        aa⇒ba n₂ {a} (⟧a p)
+            ∎)
+      (λ {a} n {co} pco p →
+        transport (λ x → b-code-a x a) (ap g r)
+          (aa⇒ba n₁ {a} $ transport (λ x → a-code-a x a) (! $ ap f r) $ co ab⟦ n ⟧a p)
+            ≡⟨ ap (transport (λ x → b-code-a x a) (ap g r) ◯ aa⇒ba n₁ {a})
+                  $ trans-q-a-code-ba (! $ ap f r) n co p ⟩
+        transport (λ x → b-code-a x a) (ap g r)
+          (ab⇒bb n₁ {g $ loc n} (transport (λ x → a-code-b x (g $ loc n)) (! $ ap f r) co) bb⟦ n ⟧a p)
+            ≡⟨ trans-q-b-code-ba (ap g r) _ _ _ ⟩
+        transport (λ x → b-code-b x (g $ loc n)) (ap g r)
+          (ab⇒bb n₁ {g $ loc n} (transport (λ x → a-code-b x (g $ loc n)) (! $ ap f r) co)) bb⟦ n ⟧a p
+            ≡⟨ ap (λ x → x bb⟦ n ⟧a p) pco ⟩∎
+        ab⇒bb n₂ {g $ loc n} co bb⟦ n ⟧a p
+            ∎)
+      (λ {b} n {co} pco p →
+        transport (λ x → b-code-b x b) (ap g r)
+          (ab⇒bb n₁ {b} $ transport (λ x → a-code-b x b) (! $ ap f r) $ co aa⟦ n ⟧b p)
+            ≡⟨ ap (transport (λ x → b-code-b x b) (ap g r) ◯ ab⇒bb n₁ {b})
+                  $ trans-q-a-code-ab (! $ ap f r) n co p ⟩
+        transport (λ x → b-code-b x b) (ap g r)
+          (aa⇒ba n₁ {f $ loc n} (transport (λ x → a-code-a x (f $ loc n)) (! $ ap f r) co) ba⟦ n ⟧b p)
+            ≡⟨ trans-q-b-code-ab (ap g r) _ _ _ ⟩
+        transport (λ x → b-code-a x (f $ loc n)) (ap g r)
+          (aa⇒ba n₁ {f $ loc n} (transport (λ x → a-code-a x (f $ loc n)) (! $ ap f r) co)) ba⟦ n ⟧b p
+            ≡⟨ ap (λ x → x ba⟦ n ⟧b p) pco ⟩∎
+        aa⇒ba n₂ {f $ loc n} co ba⟦ n ⟧b p
+            ∎)
+      (λ _ _ → prop-has-all-paths (b-code-a-is-set _ _ _ _) _ _)
+      (λ _ _ → prop-has-all-paths (b-code-b-is-set _ _ _ _) _ _)
+      (λ _ _ _ _ → prop-has-all-paths (b-code-a-is-set _ _ _ _) _ _)
 
-  bb⇒ab : ∀ {c} {b} → b-code-b (g c) b → a-code-b (f c) b
-  bb⇒ab = CF.aa⇒ba _
+  private
+    ap⇒bp-shift : ∀ n₁ n₂ r {p} co → TapbpTp n₁ n₂ r {p} co
+  abstract
+    ap⇒bp-shift n₁ n₂ r {p} co =
+      pushout-rec
+        (λ p → ∀ co → TapbpTp n₁ n₂ r {p} co)
+        (λ a → π₁ (ap⇒bp-shift-split n₁ n₂ r) {a})
+        (λ b → π₂ (ap⇒bp-shift-split n₁ n₂ r) {b})
+        (λ c → funext λ _ → prop-has-all-paths (b-code-is-set (g $ loc n₂) (right $ g c) _ _) _ _)
+        p co
 
-  glue-code-a : ∀ c → (∀ {a} co → ba⇒aa (aa⇒ba co) ≡ co)
-                    × (∀ {b} co → bb⇒ab (ab⇒bb co) ≡ co)
-  glue-code-a c = C.code-rec (f c)
-    (λ {a} co → ba⇒aa (aa⇒ba co) ≡ co)
-    ⦃ λ _ → ≡-is-set $ C.code-a-is-set _ ⦄
-    (λ {b} co → bb⇒ab (ab⇒bb co) ≡ co)
-    ⦃ λ _ → ≡-is-set $ C.code-b-is-set _ ⦄
-    (λ p →
-      ⟧a refl₀ _ aa⟦ c ⟧b refl₀ _ ab⟦ c ⟧a p
-          ≡⟨ a-code-a-refl₀ c (refl₀ _ ) p ⟩
-      ⟧a refl₀ _ ∘₀ p
-          ≡⟨ ap (λ x → ⟧a x) $ refl₀-left-unit p ⟩∎
-      ⟧a p
-          ∎)
-    (λ c₁ {co} eq p → ap (λ x → x ab⟦ c₁ ⟧a p) eq)
-    (λ c₁ {co} eq p → ap (λ x → x aa⟦ c₁ ⟧b p) eq)
-    (λ _ _ _ → C.code-has-all-cells₂-a _ _ _)
-    (λ _ _ _ _ _ → C.code-has-all-cells₂-a _ _ _)
-    (λ _ _ _ _ _ → C.code-has-all-cells₂-b _ _ _)
+  glue-code-eq-route : ∀ p n₁ n₂ (r : loc n₁ ≡ loc n₂)
+    → transport (λ c → a-code (f c) p ≃ b-code (g c) p) r (glue-code-loc n₁ p)
+    ≡ glue-code-loc n₂ p
+  abstract
+    glue-code-eq-route p n₁ n₂ r = equiv-eq $ funext λ co →
+      π₁ (transport (λ c → a-code (f c) p ≃ b-code (g c) p) r (glue-code-loc n₁ p)) co
+        ≡⟨ ap (λ x → x co) $ app-trans
+            (λ c → a-code (f c) p ≃ b-code (g c) p)
+            (λ c → a-code (f c) p → b-code (g c) p)
+            (λ _ → π₁)
+            r
+            (glue-code-loc n₁ p) ⟩
+      transport (λ c → a-code (f c) p → b-code (g c) p) r (ap⇒bp n₁ {p}) co
+        ≡⟨ trans-→ (λ c → a-code (f c) p) (λ c → b-code (g c) p) r (ap⇒bp n₁ {p}) co ⟩
+      transport (λ c → b-code (g c) p) r (ap⇒bp n₁ {p} $ transport (λ c → a-code (f c) p) (! r) co)
+        ≡⟨ ap (transport (λ c → b-code (g c) p) r ◯ ap⇒bp n₁ {p}) $ ! $ trans-ap (λ x → a-code x p) f (! r) co ⟩
+      transport (λ c → b-code (g c) p) r (ap⇒bp n₁ {p} $ transport (λ x → a-code x p) (ap f (! r)) co)
+        ≡⟨ ap (λ x → transport (λ c → b-code (g c) p) r $ ap⇒bp n₁ {p}
+                    $ transport (λ x → a-code x p) x co)
+              $ ap-opposite f r ⟩
+      transport (λ c → b-code (g c) p) r (ap⇒bp n₁ {p} $ transport (λ x → a-code x p) (! $ ap f r) co)
+        ≡⟨ ! $ trans-ap (λ x → b-code x p) g r _ ⟩
+      transport (λ x → b-code x p) (ap g r) (ap⇒bp n₁ {p} $ transport (λ x → a-code x p) (! $ ap f r) co)
+        ≡⟨ ap⇒bp-shift n₁ n₂ r {p} co ⟩∎
+      ap⇒bp n₂ {p} co
+        ∎
 
-  glue-code-b : ∀ c → (∀ {b} co → ab⇒bb (bb⇒ab co) ≡ co)
-                    × (∀ {a} co → aa⇒ba (ba⇒aa co) ≡ co)
-  glue-code-b c = CF.code-rec (g c)
-    (λ {b} co → ab⇒bb (bb⇒ab co) ≡ co)
-    ⦃ λ _ → ≡-is-set $ CF.code-a-is-set _ ⦄
-    (λ {a} co → aa⇒ba (ba⇒aa co) ≡ co)
-    ⦃ λ _ → ≡-is-set $ CF.code-b-is-set _ ⦄
-    (λ p →
-      ⟧b refl₀ _ bb⟦ c ⟧a refl₀ _ ba⟦ c ⟧b p
-          ≡⟨ b-code-b-refl₀ c (refl₀ _) p ⟩
-      ⟧b refl₀ _ ∘₀ p
-          ≡⟨ ap (λ x → ⟧b x) $ refl₀-left-unit p ⟩∎
-      ⟧b p
-          ∎)
-    (λ c₁ {co} eq p → ap (λ x → x ba⟦ c₁ ⟧b p) eq)
-    (λ c₁ {co} eq p → ap (λ x → x bb⟦ c₁ ⟧a p) eq)
-    (λ _ _ _ → CF.code-has-all-cells₂-a _ _ _)
-    (λ _ _ _ _ _ → CF.code-has-all-cells₂-a _ _ _)
-    (λ _ _ _ _ _ → CF.code-has-all-cells₂-b _ _ _)
-
-  ap⇒bp : ∀ c p → a-code (f c) p → b-code (g c) p
-  ap⇒bp = C.ap⇒bp
-
-  bp⇒ap : ∀ c p → b-code (g c) p → a-code (f c) p
-  bp⇒ap = C.bp⇒ap
+  glue-code-eq : ∀ c p → a-code (f c) p ≃ b-code (g c) p
+  glue-code-eq c p = visit-fiber-rec l (λ c → a-code (f c) p ≃ b-code (g c) p)
+    ⦃ λ c → ≃-is-set (a-code-is-set (f c) p) (b-code-is-set (g c) p) ⦄
+    (λ n → glue-code-loc n p)
+    (glue-code-eq-route p)
+    c
 
   code : P → P → Set i
-  code = pushout-rec-nondep (P → Set i) a-code b-code lemma-glue
-    where
-      lemma-glue : ∀ c → a-code (f c) ≡ b-code (g c)
-      lemma-glue-eq : ∀ c p → a-code (f c) p ≃ b-code (g c) p
+  code = pushout-rec-nondep (P → Set i) a-code b-code
+    (λ c → funext λ p → eq-to-path $ glue-code-eq c p)
 
-      lemma-glue c = funext $ eq-to-path ◯ lemma-glue-eq c
-      lemma-glue-eq c p = C.ap⇒bp c p , iso-is-eq
-        (ap⇒bp c p)
-        (bp⇒ap c p)
-        (C.bp⇒ap⇒bp c p)
-        (C.ap⇒bp⇒ap c p)
+  open import HLevelBis
+  abstract
+    code-is-set : ∀ p₁ p₂ → is-set (code p₁ p₂)
+    code-is-set = pushout-rec
+      (λ p₁ → ∀ p₂ → is-set $ code p₁ p₂)
+      a-code-is-set
+      b-code-is-set
+      (λ _ → prop-has-all-paths (Π-is-prop λ _ → is-set-is-prop) _ _)
 
+  -- Useful lemma
+  module _ {a₁ : A} where
+    open import Homotopy.VanKampen.SplitCode d l a₁
+      public using () renaming
+        ( trans-code-glue-loc   to trans-a-code-glue-loc
+        ; trans-code-!glue-loc  to trans-a-code-!glue-loc
+        )
+
+  abstract
+    trans-b-code-glue-loc : ∀ {b₁} n₂ co → transport (b-code b₁) (glue $ loc n₂) co ≡ ba⇒bb n₂ co
+    trans-b-code-glue-loc {b₁} n₂ co =
+      transport (b-code b₁) (glue $ loc n₂) co
+          ≡⟨ ! $ trans-ap (SCF.code b₁) pushout-flip (glue $ loc n₂) co ⟩
+      transport (SCF.code b₁) (ap pushout-flip (glue $ loc n₂)) co
+          ≡⟨ ap (λ x → transport (SCF.code b₁) x co)
+                $ pushout-β-glue-nondep _ right left (! ◯ glue) (loc n₂) ⟩
+      transport (SCF.code b₁) (! (glue $ loc n₂)) co
+          ≡⟨ SCF.trans-code-!glue-loc b₁ n₂ co ⟩∎
+      ba⇒bb n₂ co
+          ∎
+
+  abstract
+    trans-b-code-!glue-loc : ∀ {b₁} n₂ co → transport (b-code b₁) (! (glue $ loc n₂)) co ≡ bb⇒ba n₂ co
+    trans-b-code-!glue-loc {b₁} n₂ co =
+      transport (b-code b₁) (! (glue $ loc n₂)) co
+          ≡⟨ ! $ trans-ap (SCF.code b₁) pushout-flip (! (glue $ loc n₂)) co ⟩
+      transport (SCF.code b₁) (ap pushout-flip (! (glue $ loc n₂))) co
+          ≡⟨ ap (λ x → transport (SCF.code b₁) x co)
+                $ pushout-β-!glue-nondep _ right left (! ◯ glue) (loc n₂) ⟩
+      transport (SCF.code b₁) (! (! (glue $ loc n₂))) co
+          ≡⟨ ap (λ x → transport (SCF.code b₁) x co)
+                $ opposite-opposite $ glue $ loc n₂ ⟩
+      transport (SCF.code b₁) (glue $ loc n₂) co
+          ≡⟨ SCF.trans-code-glue-loc b₁ n₂ co ⟩∎
+      bb⇒ba n₂ co
+          ∎
+
+  abstract
+    trans-glue-code-loc : ∀ n {p} (co : a-code (f $ loc n) p)
+      → transport (λ x → code x p) (glue $ loc n) co
+      ≡ ap⇒bp n {p} co
+    trans-glue-code-loc n {p} co =
+        transport (λ x → code x p) (glue $ loc n) co
+            ≡⟨ ! $ trans-ap (λ f → f p) code (glue $ loc n) co ⟩
+        transport (λ f → f p) (ap code (glue $ loc n)) co
+            ≡⟨ ap (λ x →  transport (λ f → f p) x co)
+                $ pushout-β-glue-nondep (P → Set i) a-code b-code
+                  (λ c → funext λ p → eq-to-path $ glue-code-eq c p)
+                $ loc n ⟩
+        transport (λ f → f p) (funext λ p → eq-to-path $ glue-code-eq (loc n) p) co
+            ≡⟨ ! $ trans-ap (λ X → X) (λ f → f p)
+                    (funext λ p → eq-to-path $ glue-code-eq (loc n) p) co ⟩
+        transport (λ X → X) (happly (funext λ p → eq-to-path $ glue-code-eq (loc n) p) p) co
+            ≡⟨ ap (λ x → transport (λ X → X) (x p) co)
+                  $ happly-funext (λ p → eq-to-path $ glue-code-eq (loc n) p) ⟩
+        transport (λ X → X) (eq-to-path $ glue-code-eq (loc n) p) co
+            ≡⟨ trans-id-eq-to-path (glue-code-eq (loc n) p) co ⟩
+        π₁ (glue-code-eq (loc n) p) co
+            ≡⟨ ap (λ x → π₁ x co) $
+                visit-fiber-β-loc l
+                (λ c → a-code (f c) p ≃ b-code (g c) p)
+                ⦃ λ c → ≃-is-set (a-code-is-set (f c) p) (b-code-is-set (g c) p) ⦄
+                (λ n → glue-code-loc n p)
+                (glue-code-eq-route p)
+                n ⟩∎
+        ap⇒bp n {p} co
+            ∎
+
+  abstract
+    trans-!glue-code-loc : ∀ n {p} (co : b-code (g $ loc n) p)
+      → transport (λ x → code x p) (! $ glue $ loc n) co
+      ≡ bp⇒ap n {p} co
+    trans-!glue-code-loc n {p} co =
+      move!-transp-right (λ x → code x p) (glue $ loc n) co (bp⇒ap n {p} co)
+        $ ! $
+          transport (λ x → code x p) (glue $ loc n) (bp⇒ap n {p} co)
+            ≡⟨ trans-glue-code-loc n {p} (bp⇒ap n {p} co) ⟩
+          ap⇒bp n {p} (bp⇒ap n {p} co)
+            ≡⟨ bab-glue-code n {p} co ⟩∎
+          co
+            ∎

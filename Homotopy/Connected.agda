@@ -11,6 +11,9 @@ is-connected n A = is-contr (τ n A)
 is-connected-is-prop : (n : ℕ₋₂) {A : Set i} → is-prop (is-connected n A)
 is-connected-is-prop n = is-contr-is-prop
 
+has-connected-fibers : {A B : Set i} → ℕ₋₂ → (A → B) → Set i
+has-connected-fibers n f = ∀ x → is-connected n (hfiber f x)
+
 module _ (n : ℕ₋₂) (A : Set i) where
 
   private
@@ -25,14 +28,14 @@ module _ (n : ℕ₋₂) (A : Set i) where
 
     τ-inv-ττ : (x : τ n A) → ττ-to-τ (τ-to-ττ x) ≡ x
     τ-inv-ττ = τ-extend ⦃ λ _ → ≡-is-truncated n (τ-is-truncated n A) ⦄
-                 (λ _ → refl _)
+                 (λ _ → refl)
 
     ττ-inv-τ : (x : τ n (τ (S n) A)) → τ-to-ττ (ττ-to-τ x) ≡ x
     ττ-inv-τ = τ-extend ⦃ λ _ → ≡-is-truncated n (τ-is-truncated n _) ⦄
                  (τ-extend ⦃ λ _ → truncated-is-truncated-S n
                                      (≡-is-truncated n
                                        (τ-is-truncated n _)) ⦄
-                   (λ _ → refl _))
+                   (λ _ → refl))
 
   τ-equiv-ττ : τ n A ≃ τ n (τ (S n) A)
   τ-equiv-ττ = (τ-to-ττ , iso-is-eq _ ττ-to-τ ττ-inv-τ τ-inv-ττ)
@@ -45,7 +48,7 @@ abstract
     → (is-contr A → is-connected n A)
   contr-is-connected n (x , p) =
     (proj x , τ-extend ⦃ λ _ → ≡-is-truncated n (τ-is-truncated n _) ⦄
-                (λ _ → map proj (contr-has-all-paths (x , p) _ _)))
+                (λ _ → ap proj (contr-has-all-paths (x , p) _ _)))
 
   connected-S-is-connected : (n : ℕ₋₂) {A : Set i}
     → (is-connected (S n) A → is-connected n A)
