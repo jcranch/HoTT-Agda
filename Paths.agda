@@ -57,6 +57,9 @@ ap f refl = refl
 -- Make equational reasoning much more readable
 syntax ap f p = p |in-ctx f
 
+ap₂ : ∀ {i j k} {A : Set i} {B : Set j} {C : Set k} (F : A → B → C) {a₁ a₂ : A} {b₁ b₂ : B} → a₁ ≡ a₂ → b₁ ≡ b₂ → F a₁ b₁ ≡ F a₂ b₂
+ap₂ F refl refl = refl
+
 transport : ∀ {i j} {A : Set i} (P : A → Set j) {x y : A}
   → (x ≡ y → P x → P y)
 transport P refl t = t
@@ -68,6 +71,11 @@ apd f refl = refl
 apd! : ∀ {i j} {A : Set i} {P : A → Set j} (f : (a : A) → P a) {x y : A}
   → (p : x ≡ y) → f x ≡ transport P (! p) (f y)
 apd! f refl = refl
+
+-- Equal functions have equal values
+
+funeq : ∀ {a b} {A : Set a} {B : Set b} {f g : A → B} → f ≡ g → (x : A) → f x ≡ g x
+funeq refl x = refl
 
 -- Paths in Sigma types
 
@@ -114,6 +122,10 @@ module _ {i j} {A : Set i} {P : A → Set j} where
     Σ-eq-base-path-fiber-path : {x y : Σ A P} (p : x ≡ y)
       → Σ-eq (base-path p) (fiber-path p) ≡ p
     Σ-eq-base-path-fiber-path {x} {.x} refl = refl
+
+-- A nondependent version of the above
+comma-eq : ∀ {a b} {A : Set a} {B : Set b} {a₁ a₂ : A} {b₁ b₂ : B} → a₁ ≡ a₂ → b₁ ≡ b₂ → a₁ , b₁ ≡ a₂ , b₂
+comma-eq refl refl = refl
 
 -- Some of the ∞-groupoid structure
 

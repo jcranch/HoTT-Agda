@@ -82,7 +82,7 @@ abstract
     → is-prop (is-equiv f)
   is-equiv-is-prop f = Π-is-truncated _ (λ x → is-contr-is-prop)
 
--- Specilization
+-- Specialization
 module _ where
   Π-is-prop : ∀ {i j} {A : Set i} {P : A → Set j}
     → (((x : A) → is-prop (P x)) → is-prop (Π A P))

@@ -13,6 +13,7 @@ cst : ∀ {i j} {A : Set i} {B : Set j} (b : B) → (A → B)
 cst b = λ _ → b
 
 -- Composition of dependent functions
+infixr 6 _◯_ -- \bigcirc
 _◯_ : ∀ {i j k} {A : Set i} {B : A → Set j} {C : (a : A) → (B a → Set k)}
   → (g : {a : A} → Π (B a) (C a)) → (f : Π A B) → Π A (λ a → C a (f a))
 g ◯ f = λ x → g (f x)
@@ -30,3 +31,7 @@ curry f x y = f (x , y)
 uncurry : ∀ {i j k} {A : Set i} {B : A → Set j} {C : ∀ x → B x → Set k}
   → (∀ x y → C x y) → (∀ s → C (π₁ s) (π₂ s))
 uncurry f (x , y) = f x y
+
+-- Exchanging arguments of binary functions
+flip : ∀ {i j k} {A : Set i} {B : Set j} {C : Set k} → (A → B → C) → (B → A → C)
+flip F a b = F b a

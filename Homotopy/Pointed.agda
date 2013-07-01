@@ -18,8 +18,17 @@ open Set⋆ public
 Set⋆₀ : Set₁
 Set⋆₀ = Set⋆ zero
 
+_⋆→_ : ∀ {i j} → (Set⋆ i → Set⋆ j → Set (max i j))
+⋆[ A , a ] ⋆→ ⋆[ B , b ] = Σ (A → B) (λ f → f a ≡ b)
+
 _→⋆_ : ∀ {i j} → (Set⋆ i → Set⋆ j → Set⋆ (max i j))
-_→⋆_ A B = ⋆[ Σ (∣ A ∣ → ∣ B ∣) (λ f → f (⋆ A) ≡ ⋆ B), ((λ _ → ⋆ B) , refl) ]
+⋆[ A , a ] →⋆ ⋆[ B , b ] = ⋆[ ⋆[ A , a ] ⋆→ ⋆[ B , b ] , (cst b , refl) ]
+
+id⋆ : ∀ {i} (A : Set⋆ i) → ∣ A →⋆ A ∣
+id⋆ ⋆[ A , a ] = id A , refl
+
+cst⋆ : ∀ {i j} (A : Set⋆ i) (B : Set⋆ j) → ∣ A →⋆ B ∣
+cst⋆ ⋆[ A , a ] ⋆[ B , b ] = (cst b , refl)
 
 τ⋆ : ∀ {i} → (ℕ₋₂ → Set⋆ i → Set⋆ i)
 τ⋆ n ⋆[ X , x ] = ⋆[ τ n X , proj x ]
