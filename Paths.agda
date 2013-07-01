@@ -28,7 +28,7 @@ refl _ ∘ q = q
 ! : ∀ {i} {A : Set i} {x y : A} → (x ≡ y → y ≡ x)
 ! (refl _) = refl _
 
--- Equational reasioning combinator
+-- Equational reasoning combinator
 -- (from Nils' library)
 
 infix  0 finally

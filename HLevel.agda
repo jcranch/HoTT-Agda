@@ -3,8 +3,8 @@
 open import Types
 open import Paths
 
-{- Stuff about truncation levels (aka h-levers) that do not require the notion
-   of equivalence or function extensionality -}
+{- Stuff about truncation levels (aka h-levels) that does not require
+   the notions of equivalence or function extensionality -}
 
 module HLevel {i} where
 
@@ -21,6 +21,7 @@ is-prop = is-truncated ⟨-1⟩
 is-set  = is-truncated ⟨0⟩
 is-gpd  = is-truncated ⟨1⟩
 
+{-
 -- The original notion of h-level can be defined in the following way.
 -- We won’t use this definition though.
 is-hlevel : ℕ → (Set i → Set i)
@@ -28,12 +29,13 @@ is-hlevel n A = is-truncated (n -2) A where
   _-2 : ℕ → ℕ₋₂
   O -2 = ⟨-2⟩
   (S n) -2 = S (n -2)
+-}
 
 -- The following property is equivalent to being a proposition
 has-all-paths : Set i → Set i
 has-all-paths A = (x y : A) → x ≡ y
 
--- Having decidable equality is stronger that being a set
+-- Having decidable equality is stronger than being a set
 has-dec-eq : Set i → Set i
 has-dec-eq A = (x y : A) → (x ≡ y) ⊔ (x ≢ y)
 

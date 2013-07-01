@@ -8,7 +8,7 @@ open import Univalence
 
 module Funext {i} {A : Set i} where
 
--- Naive non dependent function extensionality
+-- Naive non-dependent function extensionality
 
 module FunextNonDep {j} {B : Set j} {f g : A → B} (h : (x : A) → f x ≡ g x)
   where
