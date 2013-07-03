@@ -2,6 +2,7 @@
 
 open import Types
 open import Paths
+open import Functions
 open import HLevel
 open import Equivalences
 open import Univalence
@@ -94,8 +95,17 @@ module FunextDep {j} {P : A → Set j} {f g : Π A P} (h : (x : A) → f x ≡ g
 
 open FunextDep
 
-happly : ∀ {j} {P : A → Set j} {f g : Π A P} (p : f ≡ g) → ((x : A) → f x ≡ g x)
+happly : ∀ {j} {P : A → Set j} {f g : Π A P} (p : f ≡ g) (x : A) → f x ≡ g x
 happly p x = ap (λ u → u x) p
+
+happly-natural : ∀ {j} {B : Set j} {f g : A → B} (p : f ≡ g) {x y : A} (q : x ≡ y) → ap f q ∘ happly p y ≡ happly p x ∘ ap g q
+happly-natural refl refl = refl
+
+happly-natural′ : ∀ {j} {B : Set j} {f g : A → B} (p : f ≡ g) {x y : A} (q : x ≡ y) → ap f q ∘ happly p y ∘ ap g (! q) ≡ happly p x
+happly-natural′ refl refl = refl
+
+happly-id-natural : {f : A → A} (p : f ≡ id A) (x : A) → happly p (f x) ≡ ap f (happly p x)
+happly-id-natural {f} p x = anti-whisker-right (happly p x) (ap (λ z → happly p (f x) ∘ z) (! (ap-id (happly p x))) ∘ ! (happly-natural p (happly p x)))
 
 -- Strong function extensionality
 
@@ -152,6 +162,9 @@ module _ {j} {P : A → Set j} {f g : Π A P} where
 
     funext-is-equiv : is-equiv funext
     funext-is-equiv = StrongFunextDep.funext-is-equiv-p
+
+  eval-funext : (h : (x : A) → f x ≡ g x) (x : A) → ap (λ k → k x) (funext h) ≡ h x
+  eval-funext h x = happly (happly-funext h) x
 
   funext-equiv : ((x : A) → f x ≡ g x) ≃ (f ≡ g)
   funext-equiv = (funext , funext-is-equiv)

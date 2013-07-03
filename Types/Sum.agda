@@ -1,4 +1,4 @@
-module Extra.Sum where
+module Types.Sum where
 
 open import Base
 

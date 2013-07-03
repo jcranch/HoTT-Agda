@@ -94,6 +94,16 @@ module _ {A : Set i} where
     inhab-prop-is-contr : A → is-prop A → is-contr A
     inhab-prop-is-contr x₀ p = (x₀ , λ y → π₁ (p y x₀))
 
+    inhab→contr-is-prop : (A → is-contr A) → is-prop A
+    inhab→contr-is-prop c = all-paths-is-prop f where
+      f : (x y : A) → x ≡ y
+      f x y = (π₂ (c x) x) ∘ ! (π₂ (c x) y)
+
+    inhab→prop-is-prop : (A → is-prop A) → is-prop A
+    inhab→prop-is-prop p = all-paths-is-prop f where
+      f : (x y : A) → x ≡ y
+      f x y = prop-has-all-paths (p x) x y
+
     contr-is-truncated : (n : ℕ₋₂) → (is-contr A → is-truncated n A)
     contr-is-truncated ⟨-2⟩ p = p
     contr-is-truncated (S n) p =

@@ -72,11 +72,6 @@ apd! : ∀ {i j} {A : Set i} {P : A → Set j} (f : (a : A) → P a) {x y : A}
   → (p : x ≡ y) → f x ≡ transport P (! p) (f y)
 apd! f refl = refl
 
--- Equal functions have equal values
-
-funeq : ∀ {a b} {A : Set a} {B : Set b} {f g : A → B} → f ≡ g → (x : A) → f x ≡ g x
-funeq refl x = refl
-
 -- Paths in Sigma types
 
 module _ {i j} {A : Set i} {P : A → Set j} where
