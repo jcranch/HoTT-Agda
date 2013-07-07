@@ -160,6 +160,9 @@ module _ {A : Set i} where
     ≡-is-prop : {x y : A} → (is-prop A → is-prop (x ≡ y))
     ≡-is-prop = ≡-is-truncated ⟨-1⟩
 
+  empty-is-prop : ¬ A → is-prop A
+  empty-is-prop e a = abort (e a)
+
 abstract
   -- Unit is contractible
   -- I do not need to specify the universe level because in this file [is-contr]
@@ -207,3 +210,4 @@ abstract
 
   ⊥-is-prop : is-prop ⊥
   ⊥-is-prop ()
+

@@ -5,6 +5,10 @@ open import Functions
 open import Paths
 open import HLevel
 open import Equivalences
+open import Equivalence.Alternative
+open import Funext
+open import HLevelBis
+
 
 module FiberEquivalences {i j k} {A : Set i} {P : A → Set k} {Q : A → Set j}
   (f : (x : A) → (P x → Q x)) where
@@ -75,3 +79,30 @@ module TotalMapEquiv (e : is-equiv total-map) where
 
 fiberwise-is-equiv : is-equiv total-map → ((x : A) → is-equiv (f x))
 fiberwise-is-equiv = TotalMapEquiv.fiberwise-is-equiv
+
+-- Now we do the inverse: if a map is locally an equivalence, it is
+-- also so globally
+private
+  hfiber-to-total : (xq : Σ A Q) → hfiber (f (π₁ xq)) (π₂ xq) → hfiber total-map xq
+  hfiber-to-total (x , .(f x a)) (a , refl) = (x , a) , refl
+
+  total-to-hfiber : (xq : Σ A Q) → hfiber total-map xq → hfiber (f (π₁ xq)) (π₂ xq)
+  total-to-hfiber .(a , f a p) ((a , p) , refl) = p , refl
+
+  hfiber-total-hfiber : (xq : Σ A Q) (a : hfiber total-map xq) → hfiber-to-total xq (total-to-hfiber xq a) ≡ a
+  hfiber-total-hfiber .(a , f a p) ((a , p) , refl) = refl
+
+  total-hfiber-total : (xq : Σ A Q) (a : hfiber (f (π₁ xq)) (π₂ xq)) → total-to-hfiber xq (hfiber-to-total xq a) ≡ a
+  total-hfiber-total (x , .(f x p)) (p , refl) = refl
+
+hfiber-is-equiv : (x : A) (q : Q x) → is-equiv (hfiber-to-total (x , q))
+hfiber-is-equiv x q = quasinv-is-equiv (hfiber-to-total (x , q)) (make-quasinv (total-to-hfiber (x , q)) (funext (total-hfiber-total (x , q))) (funext (hfiber-total-hfiber (x , q))))
+
+hfiber-equiv : (x : A) (q : Q x) → hfiber (f x) q ≃ hfiber total-map (x , q)
+hfiber-equiv x q = hfiber-to-total (x , q) , hfiber-is-equiv x q
+
+equiv-is-fiberwise : ((x : A) → is-equiv (f x)) → is-equiv total-map
+equiv-is-fiberwise F (x , q) = equiv-types-truncated ⟨-2⟩ (hfiber-equiv x q) (F x q)
+
+equiv-from-fiberwise : ((x : A) → is-equiv (f x)) → Σ A P ≃ Σ A Q
+equiv-from-fiberwise F = total-map , equiv-is-fiberwise F

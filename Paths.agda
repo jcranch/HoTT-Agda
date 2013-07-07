@@ -251,6 +251,9 @@ module _ {i} {A : Set i} where
 
   -- This second part is about transporting something along a known path
 
+  trans-equal : ∀ {j} → (P : A → Set j) {x y : A} {p q : x ≡ y} (a : P x) → p ≡ q → transport P p a ≡ transport P q a
+  trans-equal P a refl = refl
+
   trans-diag : ∀ {j} (P : A → A → Set j) {x y : A} (p : x ≡ y) (q : P x x)
     → transport (λ x → P x x) p q ≡ transport (λ z → P z y) p (transport (P x) p q)
   trans-diag P refl q = refl

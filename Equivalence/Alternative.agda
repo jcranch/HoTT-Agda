@@ -17,8 +17,12 @@ module Equivalence.Alternative where
 -- and hence prove equivalence of all notions but 3.
 
 
-open import Base
-
+open import Types
+open import Functions
+open import Paths
+open import HLevel
+open import Equivalences
+open import Funext
 
 
 module _ {i j} {A : Set i} {B : Set j} (f : A → B) where

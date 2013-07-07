@@ -13,6 +13,7 @@ hfiber {A = A} f y = Σ A (λ x → f x ≡ y)
 is-equiv : ∀ {i j} {A : Set i} {B : Set j} (f : A → B) → Set (max i j)
 is-equiv {B = B} f = (y : B) → is-contr (hfiber f y)
 
+infix 4 _≃_
 _≃_ : ∀ {i j} (A : Set i) (B : Set j) → Set (max i j)  -- \simeq
 A ≃ B = Σ (A → B) is-equiv
 
@@ -190,3 +191,4 @@ abstract
 total-Σ-eq-equiv : ∀ {i j} {A : Set i} {P : A → Set j} {x y : Σ A P}
   → (Σ (π₁ x ≡ π₁ y) (λ p → transport P p (π₂ x) ≡ (π₂ y))) ≃ (x ≡ y)
 total-Σ-eq-equiv = (total-Σ-eq , total-Σ-eq-is-equiv)
+
