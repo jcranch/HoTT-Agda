@@ -26,3 +26,4 @@ import Types.Sum
 import Homotopy.VanKampen
 import Homotopy.Cover
 import Homotopy.Cover.ExamplePi1Circle
+import Categories.index

@@ -206,3 +206,26 @@ module _ {i₁ i₂ j₁ j₂ : Level} {A₁ : Set i₁} {A₂ : Set i₂} {B₁
   ⊔-funct-truncated-r : (n : ℕ₋₂) → is-truncated-map n ⊔-funct → is-truncated-map n g
   ⊔-funct-truncated-r n E x = equiv-types-truncated n (⊔-funct-hfiber-r x ⁻¹) (E (inr x))
 
+module _ {i₁ i₂ j₁ j₂ : Level} {A₁ : Set i₁} {A₂ : Set i₂} {B₁ : Set j₁} {B₂ : Set j₂} where
+  private
+    U : (A₁ → B₁) × (A₂ → B₂) → (A₁ ⊔ A₂ → B₁ ⊔ B₂)
+    U = uncurry (⊔-funct {i₁} {i₂} {j₁} {j₂} {A₁} {A₂} {B₁} {B₂})
+
+{-
+    ⊔-funct-preimages : (T : A₁ ⊔ A₂ → B₁ ⊔ B₂) → has-all-paths (hfiber U T)
+    ⊔-funct-preimages .(⊔-funct g₁ g₂) ((f₁ , f₂) , a) ((g₁ , g₂) , refl) = Σ-eq (ap₂ _,_ e₁ e₂) {!!} where
+      e₁ : f₁ ≡ g₁
+      e₁ = funext (inl-injective ◯ happly a ◯ inl)
+      e₂ : f₂ ≡ g₂
+      e₂ = funext (inr-injective ◯ happly a ◯ inr)
+
+  ⊔-funct-components : is-truncated-map ⟨-1⟩ U
+  ⊔-funct-components T = all-paths-is-prop (⊔-funct-preimages T)
+-}
+
+-- I'm pretty sure it should be possible to prove this (maybe as
+-- above, maybe in such a way as to make more use of path induction),
+-- but for now we leave it as a postulate.
+  postulate
+    ⊔-funct-components : is-truncated-map ⟨-1⟩ U
+    
