@@ -150,10 +150,10 @@ ordFib {m} {n} f = injection-to-set ord-map (→-is-truncated ⟨0⟩ (fin-is-se
 
 Delta : Concrete₁
 Delta = record {
-          obj = ℕ;
-          obj⁺ = Fin;
-          hom = Ord;
-          hom⁺ = ord-map;
-          conf = ordFib;
-          ident′ = λ x → ord-id x , funext ord-id-is-id;
-          cmp′ = λ g f → ord-compose g f , funext (ord-compose-is-cmp g f) }
+  obj = ℕ;
+  obj⁺ = Fin ◯ S;
+  hom = λ m n → Ord (S m) (S n);
+  hom⁺ = ord-map;
+  conf = ordFib;
+  ident′ = λ x → ord-id (S x) , funext ord-id-is-id;
+  cmp′ = λ g f → ord-compose g f , funext (ord-compose-is-cmp g f) }
