@@ -17,6 +17,7 @@ open import Categories.Cat1to2 public
 open import Categories.Cat1.ProductCat public
 open import Categories.Cat1.UnionCat public
 
+open import Categories.Examples.AKS
 open import Categories.Examples.Delta
 open import Categories.Examples.Groupoids
 open import Categories.Examples.Sets
