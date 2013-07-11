@@ -31,6 +31,11 @@ is-truncated-map n f = ∀ x → is-truncated n (hfiber f x)
 
 
 
+is-truncated-map-id : ∀ {i} (n : ℕ₋₂) (A : Set i) → is-truncated-map n (id A)
+is-truncated-map-id n A x = contr-is-truncated n (pathto-is-contr x)
+
+
+
 module _ {i j k} {A : Set i} {B : Set j} {C : Set k} (g : B → C) (f : A → B) where
 
   iterate-hfiber : (c : C) → hfiber (g ◯ f) c → Σ (hfiber g c) (hfiber f ◯ π₁)
@@ -77,3 +82,22 @@ fiber-over-contr {A = A} P (x , c) = f , quasinv-is-equiv f (make-quasinv g (fun
   gf a = trans-equal P a (contr-has-all-paths (contr-is-prop (x , c) x x) (c x) refl)
   fg : (a : Σ A P) → f (g a) ≡ a
   fg (y , a) = Σ-eq (! (c y)) (trans-opposite-trans P (c y) a)
+
+
+
+module _ {i j} {A : Set i} {P : A → Set j} (x : A) where
+
+  private
+    from-hfiber : hfiber (π₁ {P = P}) x → P x
+    from-hfiber ((.x , a) , refl) = a
+
+    from-hfiber-is-equiv : (a : P x) → is-contr (hfiber from-hfiber a)
+    from-hfiber-is-equiv a = (((x , a) , refl) , refl) , θ where
+      θ : (y : hfiber from-hfiber a) → y ≡ ((x , a) , refl) , refl
+      θ (((.x , .a) , refl) , refl) = refl
+
+  hfiber-π₁ : hfiber (π₁ {P = P}) x ≃ P x
+  hfiber-π₁ = from-hfiber , from-hfiber-is-equiv
+
+is-truncated-map-π₁ : ∀ {i j} {A : Set i} {P : A → Set j} (n : ℕ₋₂) → ((x : A) → is-truncated n (P x)) → is-truncated-map n (π₁ {P = P})
+is-truncated-map-π₁ n t x = equiv-types-truncated n (hfiber-π₁ x ⁻¹) (t x)
