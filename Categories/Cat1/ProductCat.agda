@@ -11,7 +11,7 @@ open import Categories.Cat1
 
 
 
-_×₁_ : ∀ {ℓ₁ ℓ₂} → Concrete₁ {ℓ₁} → Concrete₁ {ℓ₂} → Concrete₁ {max ℓ₁ ℓ₂}
+_×₁_ : ∀ {ℓ₁ ℓ′₁ ℓ″₁ ℓ₂ ℓ′₂ ℓ″₂} → Concrete₁ {ℓ₁} {ℓ′₁} {ℓ″₁} → Concrete₁ {ℓ₂} {ℓ′₂} {ℓ″₂} → Concrete₁ {max ℓ₁ ℓ₂} {max ℓ′₁ ℓ′₂} {max ℓ″₁ ℓ″₂}
 C ×₁ D = record {
            obj = obj;
            obj⁺ = obj⁺;

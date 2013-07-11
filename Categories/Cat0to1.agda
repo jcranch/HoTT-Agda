@@ -8,7 +8,7 @@ open import Categories.Cat0
 open import Categories.Cat1
 
 
-concrete′₀→₁ : ∀ {ℓ} → Concrete′₀ {ℓ} → Concrete₁ {ℓ}
+concrete′₀→₁ : ∀ {ℓ ℓ′ ℓ″} → Concrete′₀ {ℓ} {ℓ′} {ℓ″} → Concrete₁ {ℓ} {ℓ′} {ℓ″}
 concrete′₀→₁ {ℓ} C = record {
                        obj = obj;
                        obj⁺ = obj⁺;
@@ -25,5 +25,5 @@ concrete′₀→₁ {ℓ} C = record {
   cmp′ : {x y z : obj} (g : hom y z) (f : hom x y) → hfiber hom⁺ (hom⁺ g ◯ hom⁺ f)
   cmp′ g f = π₁ (conf (hom⁺ g ◯ hom⁺ f))
 
-concrete₀→₁ : ∀ {ℓ} → Concrete₀ {ℓ} → Concrete₁ {ℓ}
+concrete₀→₁ : ∀ {ℓ ℓ′} → Concrete₀ {ℓ} {ℓ′} → Concrete₁ {ℓ} {ℓ′} {ℓ′}
 concrete₀→₁ = concrete′₀→₁ ◯ concrete₀-prime

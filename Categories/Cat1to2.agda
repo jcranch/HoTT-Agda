@@ -8,7 +8,7 @@ open import Categories.Cat1
 open import Categories.Cat2
 
 
-concrete₁→₂ : ∀ {ℓ} → Concrete₁ {ℓ} → Concrete₂ {ℓ}
+concrete₁→₂ : ∀ {ℓ} {ℓ′} {ℓ″} → Concrete₁ {ℓ} {ℓ′} {ℓ″} → Concrete₂ {ℓ} {ℓ′} {ℓ″}
 concrete₁→₂ C = record {
                   obj = obj;
                   obj⁺ = obj⁺;

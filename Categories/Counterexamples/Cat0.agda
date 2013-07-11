@@ -12,7 +12,7 @@ notmap-cod : ∀ {i j} {X : Set i} {Y : Set j} → ¬ (X → Y) → ¬ Y
 notmap-cod n y = n (cst y)
 
 
-module _ {i} (C : Concrete₀ {i}) where
+module _ {ℓ ℓ′} (C : Concrete₀ {ℓ} {ℓ′}) where
 
   open Concrete₀ C
 

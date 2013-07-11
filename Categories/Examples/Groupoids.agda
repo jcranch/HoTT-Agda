@@ -31,7 +31,7 @@ module _ {i} {X : Set i} where
     F (a , p) = ap (_,_ a) (! (concat-assoc p f g))
 
 
-groupoid : ∀ {i} → Set i → Concrete₁ {i}
+groupoid : ∀ {i} → Set i → Concrete₁
 groupoid X = record {
   obj = X;
   obj⁺ = over;

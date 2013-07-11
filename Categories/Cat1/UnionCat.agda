@@ -9,7 +9,7 @@ open import Types.Sum
 open import Categories.Cat1
 
 
-_⊔₁_ : ∀ {ℓ} → Concrete₁ {ℓ} → Concrete₁ {ℓ} → Concrete₁ {ℓ}
+_⊔₁_ : ∀ {ℓ ℓ′ ℓ″} → Concrete₁ {ℓ} {ℓ′} {ℓ″} → Concrete₁ {ℓ} {ℓ′} {ℓ″} → Concrete₁ {ℓ} {ℓ′} {ℓ″}
 C ⊔₁ D = record {
            obj = obj;
            obj⁺ = obj⁺;

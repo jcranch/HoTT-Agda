@@ -11,30 +11,30 @@ open import Base
 -- improve connections to higher subcategories.
 
 
-record Concrete₀ {ℓ} : Set (suc ℓ) where
+record Concrete₀ {ℓ ℓ′} : Set (suc (max ℓ ℓ′)) where
   field
     obj : Set ℓ
-    obj⁺ : obj → Set ℓ
+    obj⁺ : obj → Set ℓ′
 
-  hom : obj → obj → Set ℓ
+  hom : obj → obj → Set ℓ′
   hom x y = obj⁺ x → obj⁺ y
 
 
-record Concrete′₀ {ℓ} : Set (suc ℓ) where
+record Concrete′₀ {ℓ ℓ′ ℓ″} : Set (suc (max (max ℓ ℓ′) ℓ″)) where
   field
     obj : Set ℓ
-    obj⁺ : obj → Set ℓ
+    obj⁺ : obj → Set ℓ′
 
-  hom′ : obj → obj → Set ℓ
+  hom′ : obj → obj → Set ℓ′
   hom′ x y = obj⁺ x → obj⁺ y
 
   field
-    hom : obj → obj → Set ℓ
+    hom : obj → obj → Set ℓ″
     hom⁺ : {x y : obj} → hom x y → hom′ x y
     conf : {x y : obj} (f : hom′ x y) → is-truncated ⟨-2⟩ (hfiber hom⁺ f)
 
 
-concrete₀-prime : ∀ {ℓ} → Concrete₀ {ℓ} → Concrete′₀ {ℓ}
+concrete₀-prime : ∀ {ℓ} {ℓ′} → Concrete₀ {ℓ} {ℓ′} → Concrete′₀ {ℓ} {ℓ′} {ℓ′}
 concrete₀-prime C = record {
   obj = obj;
   obj⁺ = obj⁺;

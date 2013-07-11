@@ -94,7 +94,7 @@ module _ {i} (C : Category1 {i}) where
     conf : {x y : obj} (f : obj⁺ x → obj⁺ y) → is-truncated ⟨0⟩ (hfiber hom⁺ f)
     conf {x} {y} f = Σ-is-truncated ⟨0⟩ (homsets x y) (λ g → obj⁺→obj⁺-is-1type x y (hom⁺ g) f)
 
-  aks-to-concrete : Concrete₂ {i}
+  aks-to-concrete : Concrete₂
   aks-to-concrete = record {
     obj = obj;
     obj⁺ = obj⁺;

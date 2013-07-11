@@ -6,16 +6,16 @@ open import Base
 
 
 
-record Concrete₁ {ℓ} : Set (suc ℓ) where
+record Concrete₁ {ℓ ℓ′ ℓ″} : Set (suc (max (max ℓ ℓ′) ℓ″)) where
   field
     obj : Set ℓ
-    obj⁺ : obj → Set ℓ
+    obj⁺ : obj → Set ℓ′
 
-  hom′ : obj → obj → Set ℓ
+  hom′ : obj → obj → Set ℓ′
   hom′ x y = obj⁺ x → obj⁺ y
 
   field
-    hom : obj → obj → Set ℓ
+    hom : obj → obj → Set ℓ″
     hom⁺ : {x y : obj} → hom x y → hom′ x y
     conf : {x y : obj} (f : hom′ x y) → is-truncated ⟨-1⟩ (hfiber hom⁺ f)
     ident′ : (x : obj) → hfiber hom⁺ (id (obj⁺ x))
