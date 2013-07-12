@@ -51,8 +51,8 @@ fin-is-set n = dec-eq-is-set (fin-has-dec-eq n)
 -- osucˡ says "increment the domain, and send 0 to 0"
 data Ord : ℕ → ℕ → Set where
   ozero : Ord O O
-  osucʳ : {m n : ℕ} → Ord m n → Ord m (S n)
   osucˡ : {m n : ℕ} → Ord m (S n) → Ord (S m) (S n)
+  osucʳ : {m n : ℕ} → Ord m n → Ord m (S n)
 
 private
   distinguish-osucs : {m n : ℕ} (f : Ord m n) → Set zero
