@@ -19,6 +19,9 @@ record Concrete₀ {ℓ ℓ′} : Set (suc (max ℓ ℓ′)) where
   hom : obj → obj → Set ℓ′
   hom x y = obj⁺ x → obj⁺ y
 
+  is-equiv₀ : {x y : obj} → hom x y → Set ℓ′
+  is-equiv₀ = is-equiv
+
 
 record Concrete′₀ {ℓ ℓ′ ℓ″} : Set (suc (max (max ℓ ℓ′) ℓ″)) where
   field
@@ -32,6 +35,9 @@ record Concrete′₀ {ℓ ℓ′ ℓ″} : Set (suc (max (max ℓ ℓ′) ℓ�
     hom : obj → obj → Set ℓ″
     hom⁺ : {x y : obj} → hom x y → hom′ x y
     conf : {x y : obj} (f : hom′ x y) → is-truncated ⟨-2⟩ (hfiber hom⁺ f)
+
+  is-equiv′₀ : {x y : obj} → hom x y → Set ℓ′
+  is-equiv′₀ = is-equiv ◯ hom⁺
 
 
 concrete₀-prime : ∀ {ℓ} {ℓ′} → Concrete₀ {ℓ} {ℓ′} → Concrete′₀ {ℓ} {ℓ′} {ℓ′}

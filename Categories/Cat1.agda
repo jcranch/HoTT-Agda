@@ -26,3 +26,12 @@ record Concrete₁ {ℓ ℓ′ ℓ″} : Set (suc (max (max ℓ ℓ′) ℓ″))
 
   cmp : {x y z : obj} → hom y z → hom x y → hom x z
   cmp g f = π₁ (cmp′ g f)
+
+
+
+module _ {ℓ ℓ′ ℓ″} (C : Concrete₁ {ℓ} {ℓ′} {ℓ″}) where
+
+  open Concrete₁ C
+
+  is-equiv₁ : {x y : obj} → hom x y → Set (max ℓ′ ℓ″)
+  is-equiv₁ f = Σ (is-equiv $ hom⁺ f) (λ e → hfiber hom⁺ $ inverse (hom⁺ f , e))
