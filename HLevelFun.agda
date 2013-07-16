@@ -101,3 +101,15 @@ module _ {i j} {A : Set i} {P : A → Set j} (x : A) where
 
 is-truncated-map-π₁ : ∀ {i j} {A : Set i} {P : A → Set j} (n : ℕ₋₂) → ((x : A) → is-truncated n (P x)) → is-truncated-map n (π₁ {P = P})
 is-truncated-map-π₁ n t x = equiv-types-truncated n (hfiber-π₁ x ⁻¹) (t x)
+
+
+
+module _ {i j} {A : Set i} {B : Set j} (f : A → B)
+         (e : (x y : A) → is-equiv (ap f {x = x} {y = y})) where
+
+  ap-is-equiv-all-paths : (z : B) (a b : hfiber f z) → a ≡ b
+  ap-is-equiv-all-paths .(f b) (a , u) (b , refl) = Σ-eq (π₁ (π₁ ε)) (! (trans-ap (λ y → y ≡ f b) f (π₁ (π₁ ε)) u) ∘ trans-id≡cst (ap f (π₁ (π₁ ε))) u ∘ ap (λ z → ! z ∘ u) (π₂ (π₁ ε)) ∘ opposite-left-inverse u) where
+    ε = e a b u
+
+  ap-is-equiv-1-truncated : (z : B) → is-prop (hfiber f z)
+  ap-is-equiv-1-truncated = all-paths-is-prop ◯ ap-is-equiv-all-paths
